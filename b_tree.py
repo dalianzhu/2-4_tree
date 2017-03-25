@@ -75,18 +75,33 @@ class BTree(object):
             # 需要将最近子树的节点上移
             # 然后改为删除子树的这个节点
             current_key_pos = delnode.find_key_position(key)
-            left_node = delnode.children[current_key_pos]
-            delnode.keys[current_key_pos], left_node.keys[len(left_node.keys) - 1] = \
-                left_node.keys[len(left_node.keys) - 1], delnode.keys[current_key_pos]
+            left_tree = delnode.children[current_key_pos]
+            left_max_node = self._find_left_max_node(left_tree)
 
-            delnode = left_node
+            delnode.keys[current_key_pos], left_max_node.keys[len(left_max_node.keys) - 1] = \
+                left_max_node.keys[len(left_max_node.keys) - 1], delnode.keys[current_key_pos]
+
+            delnode = left_max_node
             self._remove(delnode, key)
+
+    def _find_left_max_node(self, left_tree):
+        # 找到当前节点的最右子树
+        temp_node = left_tree
+        while 1:
+            if temp_node.has_children():
+                temp_node = temp_node.children[len(left_tree.keys)]
+            else:
+                # 说明是一个叶子
+                return temp_node
 
     def _rebalance(self, delnode):
         if self.root == delnode:
             # merge根节点
             if len(delnode.keys) == 0:
                 self.root = self.root.children[0]
+                for subnode in self.root.children:
+                    if subnode:
+                        subnode.parent = self.root
             return
 
         # 说明删除的是叶子 or 树干节点，进行合并操作
@@ -165,7 +180,12 @@ class BTree(object):
             right_node_keys = parent.children[right_brother_pos].keys
 
             new_node.keys = input_node_keys + [parent_key_val] + right_node_keys
-            new_node.children = parent.children[left_brother_pos].children + input_node.children
+            new_node.children =input_node.children + parent.children[right_brother_pos].children
+
+        # 维护新的子节点的parent的关系
+        for subnode in new_node.children:
+            if subnode:
+                subnode.parent = new_node
 
         return new_node, parent_key_val
 
@@ -306,5 +326,15 @@ class BTreeNode(object):
         # 处理右子树
         right.keys = [v for k, v in enumerate(self.keys) if k > mid_position]
         right.children = [v for k, v in enumerate(self.children) if k > mid_position]
+
+        # 维护新的子节点的parent的关系
+        for subnode in left.children:
+            if subnode:
+                subnode.parent = left
+
+        for subnode in right.children:
+            if subnode:
+                subnode.parent = right
+
 
         return mid_key, left, right

@@ -1,5 +1,5 @@
 from b_tree import BTree, debug
-
+import random
 
 def test_case_1():
     debug("test case 1 run")
@@ -118,12 +118,54 @@ def test_case_4():
                [66, 68, 70],
            ]
 
+def test_case_5():
+    debug("test case 5 run")
+    keys = [6656, 7681, 9223, 2570, 7183, 5136, 1021, 9748,
+            7190, 6167, 543, 5151, 5152, 8740, 5673, 6699, 46,
+            4143,  ]
+
+    tree = BTree()
+    for item in keys:
+        tree.add(item)
+
+    for item in keys:
+        target_key = item
+        search_node = tree.find(target_key)
+        if target_key in search_node.keys:
+            pass
+        else:
+            raise Exception("not find!")
+
+    for item in [9223, 2570, 7183, 5136, 1021, 9748,
+                 7190, 6167, 543, 5151, 5152, 8740, 5673, 6699, 46,
+                 4143]:
+        target_key = item
+        debug(target_key)
+        keys.remove(target_key)
+        tree.remove(target_key)
+
+        search_node = tree.find(target_key)
+        if target_key in search_node.keys:
+            raise Exception("cannot find a removed key")
+        else:
+            pass
+
+        for exist_key in keys:
+            search_node = tree.find(exist_key)
+            if exist_key in search_node.keys:
+                pass
+            else:
+                raise Exception("A value({}) that should exist can not be found  !".format(exist_key))
+
+
+
 
 test_cases = [
-    test_case_1,
-    test_case_2,
-    test_case_3,
-    test_case_4,
+    # test_case_1,
+    # test_case_2,
+    # test_case_3,
+    # test_case_4,
+    test_case_5,
 ]
 for item in test_cases:
     item()
